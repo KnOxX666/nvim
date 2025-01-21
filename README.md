@@ -23,6 +23,9 @@ Activate nvim configuration just by checking out this repo:
     
     https://snapcraft.io/install/nvim/rhel
     sudo yum install xclip
+    # Download nodejs (22.x)
+    https://nodejs.org/en/download
+    # Put node and npm to your $PATH variable
     
 **C++/Rust Debugging (Ubuntu)**
     
