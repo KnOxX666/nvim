@@ -7,9 +7,6 @@ return {
     { "folke/neodev.nvim", opts = {} },
   },
   config = function()
-    -- import lspconfig plugin
-    local lspconfig = require("lspconfig")
-
     -- import cmp-nvim-lsp plugin
     local cmp_nvim_lsp = require("cmp_nvim_lsp")
 
@@ -77,69 +74,55 @@ return {
 
     -- Configure LSP servers
     local servers = {
-      "ts_ls",
-      "html", 
-      "cssls",
-      "tailwindcss",
-      "svelte",
-      "lua_ls",
-      "graphql",
-      "emmet_ls",
-      "prismals",
-      "pyright",
-      "clangd",
-    }
-
-    -- Setup each server
-    for _, server_name in ipairs(servers) do
-      if server_name == "svelte" then
-        -- configure svelte server
-        lspconfig["svelte"].setup({
-          capabilities = capabilities,
-          on_attach = function(client, bufnr)
-            vim.api.nvim_create_autocmd("BufWritePost", {
-              pattern = { "*.js", "*.ts" },
-              callback = function(ctx)
-                -- Here use ctx.match instead of ctx.file
-                client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
-              end,
-            })
-          end,
-        })
-      elseif server_name == "graphql" then
-        -- configure graphql language server
-        lspconfig["graphql"].setup({
-          capabilities = capabilities,
-          filetypes = { "graphql", "gql", "svelte", "typescriptreact", "javascriptreact" },
-        })
-      elseif server_name == "emmet_ls" then
-        -- configure emmet language server
-        lspconfig["emmet_ls"].setup({
-          capabilities = capabilities,
-          filetypes = { "html", "typescriptreact", "javascriptreact", "css", "sass", "scss", "less", "svelte" },
-        })
-      elseif server_name == "lua_ls" then
-        -- configure lua server (with special settings)
-        lspconfig["lua_ls"].setup({
-          capabilities = capabilities,
-          settings = {
-            Lua = {
-              -- make the language server recognize "vim" global
-              diagnostics = {
-                globals = { "vim" },
-              },
-              completion = {
-                callSnippet = "Replace",
-              },
+      ts_ls = {},
+      html = {}, 
+      cssls = {},
+      tailwindcss = {},
+      svelte = {
+        on_attach = function(client, bufnr)
+          vim.api.nvim_create_autocmd("BufWritePost", {
+            pattern = { "*.js", "*.ts" },
+            callback = function(ctx)
+              -- Here use ctx.match instead of ctx.file
+              client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
+            end,
+          })
+        end,
+      },
+      lua_ls = {
+        settings = {
+          Lua = {
+            -- make the language server recognize "vim" global
+            diagnostics = {
+              globals = { "vim" },
+            },
+            completion = {
+              callSnippet = "Replace",
             },
           },
-        })
-      else
-        -- default setup for other servers
-        lspconfig[server_name].setup({
-          capabilities = capabilities,
-        })
-      end
+        },
+      },
+      graphql = {
+        filetypes = { "graphql", "gql", "svelte", "typescriptreact", "javascriptreact" },
+      },
+      emmet_ls = {
+        filetypes = { "html", "typescriptreact", "javascriptreact", "css", "sass", "scss", "less", "svelte" },
+      },
+      prismals = {},
+      pyright = {},
+      clangd = {},
+    }
+
+    -- Setup each server with vim.lsp.config
+    for server_name, server_config in pairs(servers) do
+      -- Merge capabilities into the server config
+      server_config.capabilities = capabilities
+      
+      -- Register the LSP configuration
+      vim.lsp.config[server_name] = server_config
+      
+      -- Enable the LSP server
+      vim.lsp.enable(server_name)
     end
   end,
 }
